@@ -5,6 +5,8 @@ import { Response } from 'node-fetch'
 
 const DEFAULT_HOST = 'track.customer.io'
 const DEFAULT_SEND_EVENTS_FROM_ANONYMOUS_USERS = 'Send all events'
+// Regex to match our standard uuids, but does not match firebase uuids
+const NON_FIREBASE_UUID_REGEX = new RegExp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
 
 interface CustomerIoPluginInput extends PluginInput {
     config: {
@@ -113,6 +115,11 @@ export const setupPlugin: Plugin<CustomerIoPluginInput>['setupPlugin'] = async (
 }
 
 export const onEvent: Plugin<CustomerIoPluginInput>['onEvent'] = async (event, meta) => {
+    // Skip events for non-firebase users
+    if (event.distinct_id.match(NON_FIREBASE_UUID_REGEX)) {
+      return;
+    }
+
     const { global, config } = meta
     // KLUDGE: This shouldn't even run if setupPlugin failed. Needs to be fixed at the plugin server level
     if (!global.eventNames) {
