@@ -246,8 +246,12 @@ function isEmail(email: string): boolean {
 
 function getEmailFromEvent(event: ProcessedPluginEvent): string | null {
     const setAttribute = event.$set
-    if (typeof setAttribute !== 'object' || !setAttribute['email']) {
+    if (typeof setAttribute !== 'object' || (!setAttribute['Email'] && !setAttribute['email'])) {
         return null
+    }
+    const capitalEmailCandidate = setAttribute['Email']
+    if (isEmail(capitalEmailCandidate)) {
+        return capitalEmailCandidate;
     }
     const emailCandidate = setAttribute['email']
     if (isEmail(emailCandidate)) {
